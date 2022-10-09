@@ -6,7 +6,7 @@
 #    By: kokrokhi <kokrokhi@student.42wolfsburg.    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/07/22 16:59:40 by kokrokhi          #+#    #+#              #
-#    Updated: 2022/10/05 17:45:42 by kokrokhi         ###   ########.fr        #
+#    Updated: 2022/10/06 17:06:26 by kokrokhi         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ HEADER	= -I includes -I Libft/
 LIBFT	= Libft/
 LIBFT_A = Libft/libft.a
 
-SRCS	=	so_long.c map.c map2.c map3.c
+SRCS	=	so_long.c map.c map2.c map3.c moves.c
 
 OBJS	= $(SRCS:.c=.o)
 

@@ -6,13 +6,13 @@
 /*   By: kokrokhi <kokrokhi@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/16 17:11:50 by kokrokhi          #+#    #+#             */
-/*   Updated: 2022/10/05 18:22:38 by kokrokhi         ###   ########.fr       */
+/*   Updated: 2022/10/09 15:32:39 by kokrokhi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
 
-void map_check_line(char *buffer, t_global **globals, int str_len)
+void map_check_line(char *buffer, t_global **globals, int str_len, int y)
 {
 	int i;
 
@@ -27,23 +27,30 @@ void map_check_line(char *buffer, t_global **globals, int str_len)
 		if (buffer[i] == 'P')
 		{
 			if ((*globals)->start_exists == false)
+			{
 				(*globals)->start_exists = true;
+				(*globals)->player_x = y;
+				(*globals)->player_y = i;
+			}
 			else if ((*globals)->start_exists == true)
 				(*globals)->more_than_one_player_exists = true;
 		}
-		else if (buffer[i] == 'E')
+		else if (buffer[i] == 'E' && ++((*globals)->elements_count))
 		{
 			if ((*globals)->exit_exists == false)
 				(*globals)->exit_exists = true;
+			else if ((*globals)->exit_exists == true)
+				(*globals)->more_than_one_exit_exists = true;
 		}
-		else if (buffer[i] == 'C')
+		else if (buffer[i] == 'C' && ++((*globals)->elements_count))
 		{
 			if ((*globals)->collectible_exists == false)
 				(*globals)->collectible_exists = true;
+			(*globals)->collectibles_count++;
 		}	
 		else if (buffer[i] != '1' && buffer[i] != '0' && buffer[i] != '\n' && buffer[i] != '\0')
 		{
-			ft_printf("Not allowed character!\n");
+			ft_printf("Error\nNot allowed character!\n");
 			exit(0);
 		}
 	}
@@ -57,17 +64,19 @@ void check_for_atleast_one_exit_collectible_player(t_global **globals)
 
 	ifMistake = 0;
 	if ((*globals)->start_exists == false && ++ifMistake)
-		ft_printf("One player start position should be!\n");
+		ft_printf("Error\nOne player start position should be!\n");
 	if ((*globals)->more_than_one_player_exists == true && ++ifMistake)
-		ft_printf("Only one player start position is allowed!\n");
+		ft_printf("Error\nOnly one player start position is allowed!\n");
 	if ((*globals)->exit_exists == false && ++ifMistake)
-		ft_printf("At least one exit should be!\n");
+		ft_printf("Error\nAt least one exit should be!\n");
+	if ((*globals)->more_than_one_exit_exists == true && ++ifMistake)
+		ft_printf("Error\nOnly one exit position is allowed!\n");
 	if ((*globals)->collectible_exists == false && ++ifMistake)
-		ft_printf("At least one collectible should be!\n");
+		ft_printf("Error\nAt least one collectible should be!\n");
 	if ((*globals)->border_hole == true && ++ifMistake)
-		ft_printf("Invalid map left/right border!\n");
+		ft_printf("Error\nInvalid map left/right border!\n");
 	if ((*globals)->top_bottom_hole == true && ++ifMistake)
-		ft_printf("Invalid map top/bottom border!\n");
+		ft_printf("Error\nInvalid map top/bottom border!\n");
 	if (ifMistake > 0)
 		exit(0);
 }
@@ -82,7 +91,7 @@ void map_check_top_bottom(t_global **globals, char *buffer, int x)
 	}
 }
 
-void draw_map_from_berfile(void	**mlx_ptr, void	**win_ptr, char *argv)
+void draw_map_from_berfile(t_global	*globals, char *argv)
 {
 	char	*buffer = "";
 	char	*tilename = "";
@@ -92,9 +101,7 @@ void draw_map_from_berfile(void	**mlx_ptr, void	**win_ptr, char *argv)
 	int		fd, x, y;
 	int		img_width;
 	int		img_height;
-	t_global	*globals;
 
-	globals = ft_calloc(sizeof(t_global), 1);
 	y = 0;
 	if (valid_extension(argv))
 		return ;
@@ -102,9 +109,7 @@ void draw_map_from_berfile(void	**mlx_ptr, void	**win_ptr, char *argv)
 	read_map(&globals, argv);
 	map_fill(&globals, argv);
 	if (is_rectangular(&globals) == 1)
-		{
-		
-		exit(0);}
+		exit(0);
 	while (buffer != NULL)
 	{
 		if (!check_buf(&x, &buffer, fd, y))
@@ -116,12 +121,12 @@ void draw_map_from_berfile(void	**mlx_ptr, void	**win_ptr, char *argv)
 			map_check_top_bottom(&globals, buffer, str_len - 2);
 		}
 		else
-			map_check_line(buffer, &globals, str_len - 2);
+			map_check_line(buffer, &globals, str_len - 2, y);
 		while (buffer[x] != '\n' && buffer[x] != '\0')
 		{
 			tiletype = ft_strjoin("./assets/Fantasy/Background/", return_tile(buffer, tilename, x));
-			tile = mlx_xpm_file_to_image(*mlx_ptr, tiletype, &img_width, &img_height);
-			mlx_put_image_to_window(*mlx_ptr, *win_ptr, tile, (64 * x), (64 * y));
+			tile = mlx_xpm_file_to_image(globals->mlx, tiletype, &img_width, &img_height);
+			mlx_put_image_to_window(globals->mlx, globals->window, tile, (64 * x), (64 * y));
 			free(tiletype);
 			free(tile);
 			x++;
@@ -133,9 +138,9 @@ void draw_map_from_berfile(void	**mlx_ptr, void	**win_ptr, char *argv)
 			map_check_top_bottom(&globals, buffer, str_len - 2);
 		else if (buffer[x] == '\0' && buffer[x-1] == '1')
 			map_check_top_bottom(&globals, buffer, str_len - 1);
-		if (buffer)
-			free(buffer);
 	}
+	if (has_valid_path(&globals) == 1)
+		exit(0);
 	free(buffer);
 	check_for_atleast_one_exit_collectible_player(&globals);
 }

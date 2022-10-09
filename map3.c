@@ -6,7 +6,7 @@
 /*   By: kokrokhi <kokrokhi@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/05 17:40:26 by kokrokhi          #+#    #+#             */
-/*   Updated: 2022/10/05 18:02:03 by kokrokhi         ###   ########.fr       */
+/*   Updated: 2022/10/05 19:19:45 by kokrokhi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,4 +71,35 @@ void	map_fill(t_global **globals, char *map_file)
 		row_index++;
 	}
 	close (fd);
+}
+
+void	counting_reachable(t_global **game, int x, int y)
+{
+	if ((*game)->map_copy[x][y] == '1')
+		return ;
+	if ((*game)->map_copy[x][y] == 'C')
+		(*game)->elements_counted++;
+	if ((*game)->map_copy[x][y] == 'E')
+		(*game)->elements_counted++;
+	(*game)->map_copy[x][y] = '1';
+	counting_reachable(game, x, y + 1);
+	counting_reachable(game, x, y - 1);
+	counting_reachable(game, x + 1, y);
+	counting_reachable(game, x - 1, y);
+}
+
+int	has_valid_path(t_global **game)
+{
+	int	x;
+	int	y;
+
+	x = (*game)->player_x;
+	y = (*game)->player_y;
+	counting_reachable(game, x, y);
+	if ((*game)->elements_count != (*game)->elements_counted)
+	{
+		ft_printf("No valid path\n");
+		return (1);
+	}
+	return (0);
 }

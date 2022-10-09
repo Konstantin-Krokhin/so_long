@@ -6,7 +6,7 @@
 /*   By: kokrokhi <kokrokhi@student.42wolfsburg.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/03 18:46:43 by kokrokhi          #+#    #+#             */
-/*   Updated: 2022/10/05 18:21:14 by kokrokhi         ###   ########.fr       */
+/*   Updated: 2022/10/09 15:10:42 by kokrokhi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ int	is_rectangular(t_global **game)
 	{
 		if (ft_strlen((*game)->map[0]) != ft_strlen((*game)->map[i]))
 		{
-			ft_printf("Map not rectangular \n");
+			ft_printf("Error\nMap not rectangular \n");
 			return (1);
 		}
 		i++;
